@@ -1,0 +1,10 @@
+file extensions:
+.env		X (hidden in Oil.nvim)
+.cjs		X
+.ino
+.js
+.log		X
+.md
+.tsx
+.txt		X
+
