@@ -940,7 +940,10 @@ require("lazy").setup({
 			-- cursor location to LINE:COLUMN
 			---@diagnostic disable-next-line: duplicate-set-field
 			statusline.section_location = function()
-				return "%2l:%-2v"
+				local dateTimeTable = os.date("*t")
+
+				local time = string.format("%s:%s", dateTimeTable.hour, dateTimeTable.min)
+				return "%2l:%-2v (%p%%) " .. time
 			end
 
 			-- ... and there is more!
@@ -982,7 +985,7 @@ require("lazy").setup({
 	--  Uncomment any of the lines below to enable them (you will need to restart nvim).
 	--
 	-- require 'kickstart.plugins.debug',
-	require("kickstart.plugins.indent_line"),
+	-- require("kickstart.plugins.indent_line"),
 	--
 
 	-- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
