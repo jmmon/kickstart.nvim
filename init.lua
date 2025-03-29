@@ -90,9 +90,6 @@ P.S. You can delete this when you're done too. It's your config now! :)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
-vim.g.codeium_no_map_tab = 1 -- disable default bindings
-vim.g.codeium_tab_fallback = "\t" -- default \t -- not sure what this does exactly. "The fallback key when there is no suggestion display in `codeium#Accept()`."
-
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
@@ -181,6 +178,9 @@ vim.opt.signcolumn = "yes"
 
 -- Decrease update time
 vim.opt.updatetime = 250
+
+-- Decrease mapped sequence wait time
+-- Displays which-key popup sooner
 vim.opt.timeoutlen = 300
 
 -- Configure how new splits should be opened
@@ -202,6 +202,11 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
+-- instead raise a dialog asking if you wish to save the current file(s)
+-- See `:help 'confirm'`
+vim.opt.confirm = true
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -209,27 +214,13 @@ vim.opt.scrolloff = 10
 vim.opt.hlsearch = true
 vim.opt.incsearch = true
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
+vim.keymap.set("n", "<leader>h", "<cmd>nohlsearch<CR>")
 
 -- Diagnostic keymaps
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous [D]iagnostic message" })
 vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next [D]iagnostic message" })
 vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float, { desc = "Show diagnostic [E]rror messages" })
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
-
--- disabling NeoTree to try Oil.nvim!
--- vim.keymap.set('n', '<leader>t', '<cmd>:Neotree toggle<CR>')
-
--- vim.keymap.set('n', '<C-\\>', '<cmd>:Neotree toggle<CR>')
--- vim.keymap.set('n', '<C-.>', '<cmd>:Neotree reveal<CR>')
--- vim.keymap.set('n', 'gd', '<cmd>:Neotree float reveal_file=<cfile> reveal_force_cwd<CR>')
--- vim.keymap.set('n', '<leader>b', '<cmd>:Neotree toggle show buffers right<CR>')
--- vim.keymap.set('n', '<leader>s', '<cmd>:Neotree float git_status<CR>')
-
--- nnoremap / :Neotree toggle current reveal_force_cwd<cr>
--- nnoremap | :Neotree reveal<cr>
--- nnoremap gd :Neotree float reveal_file=<cfile> reveal_force_cwd<cr>
--- nnoremap <leader>b :Neotree toggle show buffers right<cr>
--- nnoremap <leader>s :Neotree float git_status<cr>
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -253,25 +244,46 @@ vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left wind
 vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
 vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
 vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
+-- intended for toggleterm but they aren't working...
 
---
+-- NOTE: Some terminals have coliding keymaps or are not able to send distinct keycodes
+-- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
+-- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
+-- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
+-- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
+
+vim.keymap.set("n", "<M-h>", "<CMD>bprev<CR>", { desc = "Go to previous buffer" })
+vim.keymap.set("n", "<M-l>", "<CMD>bnext<CR>", { desc = "Go to next buffer" })
+
+-- NOTE:
+-- some hotkeys for TABS (tabs rarely used, but should be helpful to note):
+-- gt: go to next tab,
+-- gT: go to previous tab
 --
 --
 --
 
 local opts = { noremap = true, silent = true }
+-- NOTE: `#` means "last" e.g. last used buffer
+--
 -- delete this buffer (2x CR: to run command & skip the confirmation dialog)
-vim.keymap.set("n", "<leader>bd", "<cmd>bprevious|bdelete#<CR><CR>", opts)
+vim.keymap.set("n", "<leader>bd", "<cmd>bprev|bd#<CR><CR>", opts)
+vim.keymap.set("n", "<leader>bdf", "<cmd>bprev|bd!#<CR><CR>", opts)
 -- close all buffers
 vim.keymap.set("n", "<leader>bda", "<cmd>%bd|e<CR><CR>", opts)
 -- close OTHER buffers
--- close all buffers, (creates No Name) open last buffer, delete last buffer (the No Name)
+-- > - close all buffers,
+-- > - (creates No Name) open last buffer,
+-- > - delete last buffer (the No Name)
 vim.keymap.set("n", "<leader>bdo", "<cmd>%bd|e#|bd#<CR><CR>'\"", opts)
 
 -- stay in visual mode when indenting
 vim.keymap.set("v", "<", "<gv", opts)
 vim.keymap.set("v", ">", ">gv", opts)
 
+-- reload nvim config: (WON'T WORK with LAZY.NVIM)
+-- vim.keymap.set("n", "<leader>sv", "<cmd>source $MYVIMRC<CR>", { noremap = true })
+--nnoremap <leader>sv :source $MYVIMRC<CR>
 --
 --
 --
@@ -318,7 +330,6 @@ end ]]
 -- vim.keymap.set("i", "<leader>xx", "Z", opts)
 -- vim.keymap.set("v", "<leader>x", "z", opts)
 -- vim.keymap.set("v", "<leader>xx", "Z", opts)
-
 --
 --
 --
@@ -344,25 +355,30 @@ local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
 	vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
-end ---@diagnostic disable-next-line: undefined-field
+end
 vim.opt.rtp:prepend(lazypath)
 
 --
 --
 --
 --
+vim.cmd([[ 
+  augroup cursorline_numcol_hi
+    autocmd!
+    "-- custom highlights
+    "-- make cursor line only underline instead of highlight
+    autocmd VimEnter * :hi clear CursorLine 
+    autocmd VimEnter * :hi CursorLine cterm=underline gui=underline guibg=#111111
 
--- custom highlights
--- make cursor line only underline instead of highlight
-vim.cmd([[ autocmd VimEnter * :hi clear CursorLine ]])
-vim.cmd([[ autocmd VimEnter * :hi CursorLine cterm=underline gui=underline guibg=#111111 ]])
---vim.cmd [[ autocmd VimEnter * :hi CursorLine  cterm=underline ctermfg=000000 gui=underline guifg=#000000 guibg=#111111 ]]
+    "-- line number && cursor line highlights
+    "-- all line numbers as grey
+    "-- current line number as pink with light grey background
+    autocmd VimEnter * :hi LineNr guifg=#777777
+    autocmd VimEnter * :hi CursorLineNr guifg=#F55FFE guibg=#444444
+  augroup END
+]])
 
--- line number && cursor line highlights
-vim.cmd([[ autocmd VimEnter * :hi LineNr guifg=#777777 ]]) -- all line numbers as grey
-vim.cmd([[ autocmd VimEnter * :hi CursorLineNr guifg=#F55FFE guibg=#444444 ]]) -- current line number as pink with light grey background
-
--- -- treesitter context - bottom row highlight, acting as a separator
+-- -- treesitter-context - bottom row highlight, acting as a separator
 -- vim.cmd [[ autocmd VimEnter * :hi TreesitterContextBottom gui=underline guisp=Grey ]]
 
 --
@@ -535,7 +551,7 @@ require("lazy").setup({
 			vim.keymap.set("n", "<leader>sd", builtin.diagnostics, { desc = "[S]earch [D]iagnostics" })
 			vim.keymap.set("n", "<leader>sr", builtin.resume, { desc = "[S]earch [R]esume" })
 			vim.keymap.set("n", "<leader>s.", builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-			vim.keymap.set("n", "<leader><leader>", builtin.buffers, { desc = "[ ] Find existing buffers" })
+			vim.keymap.set("n", "<leader>sb", builtin.buffers, { desc = "[ ] Find existing buffers" })
 
 			-- Slightly advanced example of overriding default behavior and theme
 			vim.keymap.set("n", "<leader>/", function()
@@ -657,6 +673,8 @@ require("lazy").setup({
 					-- Opens a popup that displays documentation about the word under your cursor
 					--  See `:help K` for why this keymap
 					map("K", vim.lsp.buf.hover, "Hover Documentation")
+					-- NOTE: KK will open and focus the hover window, q to quit/close.
+					-- Can navigate like normal once it is focused!
 
 					-- WARN: This is not Goto Definition, this is Goto Declaration.
 					--  For example, in C this would take you to the header
@@ -709,7 +727,36 @@ require("lazy").setup({
 				--    https://github.com/pmizio/typescript-tools.nvim
 				--
 				-- But for many setups, the LSP (`tsserver`) will work just fine
-				tsserver = {},
+				arduino_language_server = {
+					cmd = {
+						-- Required
+						"arduino-language-server",
+
+						"-cli-config",
+						"/home/joepx/.arduino15/arduino-cli.yaml",
+						-- Optional
+						--
+						"-cli",
+						"/usr/bin/arduino-cli_1.1.1_Linux_64bit",
+
+						"-clangd",
+						"/usr/bin/clangd",
+					},
+				},
+				bashls = {},
+				cssls = {},
+				emmet_language_server = {},
+				emmet_ls = {},
+				eslint_d = {},
+				html = {},
+				prettier = {
+					cli_options = {
+						print_width = 80,
+					},
+				},
+				tailwindcss = {},
+				ts_ls = {},
+
 				--
 
 				lua_ls = {
@@ -734,7 +781,7 @@ require("lazy").setup({
 								callSnippet = "Replace",
 							},
 							-- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-							-- diagnostics = { disable = { 'missing-fields' } },
+							-- diagnostics = { disable = { "missing-fields" } },
 						},
 					},
 				},
@@ -756,6 +803,7 @@ require("lazy").setup({
 			})
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
+			---@diagnostic disable-next-line: missing-fields
 			require("mason-lspconfig").setup({
 				handlers = {
 					function(server_name)
@@ -773,12 +821,38 @@ require("lazy").setup({
 
 	{ -- Autoformat
 		"stevearc/conform.nvim",
+		event = { "BufWritePre" },
+		cmd = { " ConformInfo" },
+		keys = {
+			{
+				"<leader>f",
+				function()
+					require("conform").format({ async = true, lsp_format = "fallback" })
+				end,
+				mode = "",
+				desc = "[F]ormat Buffer",
+			},
+		},
 		opts = {
 			notify_on_error = false,
-			format_on_save = {
-				timeout_ms = 500,
-				lsp_fallback = true,
-			},
+			-- format_on_save = {
+			-- 	timeout_ms = 500,
+			-- 	lsp_fallback = true,
+			-- },
+			format_on_save = function(bufnr)
+				-- Disable "format_on_save lsp_fallback" for languages that don't
+				-- have a well standardized coding style. You can add additional
+				-- languages here or re-enable it for the disabled ones.
+				local disable_filetypes = { c = true, cpp = true }
+				if disable_filetypes[vim.bo[bufnr].filetype] then
+					return nil
+				else
+					return {
+						timeout_ms = 500,
+						lsp_format = "fallback",
+					}
+				end
+			end,
 			formatters_by_ft = {
 				lua = { "stylua" },
 				-- Conform can also run multiple formatters sequentially
@@ -786,7 +860,10 @@ require("lazy").setup({
 				--
 				-- You can use a sub-list to tell conform to run *until* a formatter
 				-- is found.
-				-- javascript = { { "prettierd", "prettier" } },
+				javascript = { "prettierd", "prettier", stop_after_first = true },
+				javascriptreact = { "prettierd", "prettier", stop_after_first = true },
+				typescript = { "prettierd", "prettier", stop_after_first = true },
+				typescriptreact = { "prettierd", "prettier", stop_after_first = true },
 			},
 		},
 	},
@@ -815,6 +892,11 @@ require("lazy").setup({
 			--  into multiple repos for maintenance purposes.
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-path",
+			-- nvim-cmp source for neovim Lua API
+			-- so that things like vim.keymap.set, etc. are autocompleted
+			"hrsh7th/cmp-nvim-lua",
+
+			"hrsh7th/cmp-nvim-lsp-signature-help",
 
 			-- If you want to add a bunch of pre-configured snippets,
 			--    you can use this plugin to help you. It even has snippets
@@ -876,9 +958,11 @@ require("lazy").setup({
 					end, { "i", "s" }),
 				}),
 				sources = {
+					{ name = "nvim_lua" },
 					{ name = "nvim_lsp" },
 					{ name = "luasnip" },
 					{ name = "path" },
+					{ name = "nvim_lsp_signature_help" },
 				},
 			})
 		end,
@@ -922,6 +1006,26 @@ require("lazy").setup({
 			--  - ci'  - [C]hange [I]nside [']quote
 			require("mini.ai").setup({ n_lines = 500 })
 
+			require("mini.indentscope").setup()
+
+			require("mini.tabline").setup()
+
+			local map = require("mini.map")
+			require("mini.map").setup({
+				integrations = {
+					map.gen_integration.gitsigns(),
+					map.gen_integration.builtin_search(),
+					map.gen_integration.diagnostic(),
+				},
+			})
+
+			vim.keymap.set("n", "<leader>mc", MiniMap.close, { desc = "Close MiniMap" }) ---@diagnostic disable-line undefined-global
+			vim.keymap.set("n", "<leader>mo", MiniMap.open, { desc = "Open MiniMap" }) ---@diagnostic disable-line undefined-global
+			vim.keymap.set("n", "<leader>mt", MiniMap.toggle, { desc = "Toggle MiniMap" }) ---@diagnostic disable-line undefined-global
+			vim.keymap.set("n", "<leader>mf", MiniMap.toggle_focus, { desc = "Toggle Focus of MiniMap" }) ---@diagnostic disable-line undefined-global
+			vim.keymap.set("n", "<leader>mr", MiniMap.refresh, { desc = "Refresh MiniMap" }) ---@diagnostic disable-line undefined-global
+			vim.keymap.set("n", "<leader>ms", MiniMap.toggle_side, { desc = "Swap MiniMap Side" }) ---@diagnostic disable-line undefined-global
+
 			-- Add/delete/replace surroundings (brackets, quotes, etc.)
 			--
 			-- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
@@ -933,7 +1037,29 @@ require("lazy").setup({
 			--  You could remove this setup call if you don't like it,
 			--  and try some other statusline plugin
 			local statusline = require("mini.statusline")
-			statusline.setup()
+			statusline.setup({
+				-- active = function()
+				-- 	local mode, mode_hl = MiniStatusline.section_mode({ trunc_width = 120 })
+				-- 	local git = MiniStatusline.section_git({ trunc_width = 40 })
+				-- 	local diff = MiniStatusline.section_diff({ trunc_width = 75 })
+				-- 	local diagnostics = MiniStatusline.section_diagnostics({ trunc_width = 75 })
+				-- 	local lsp = MiniStatusline.section_lsp({ trunc_width = 75 })
+				-- 	local filename = MiniStatusline.section_filename({ trunc_width = 140 })
+				-- 	local fileinfo = MiniStatusline.section_fileinfo({ trunc_width = 120 })
+				-- 	local location = MiniStatusline.section_location({ trunc_width = 75 })
+				-- 	local search = MiniStatusline.section_searchcount({ trunc_width = 75 })
+				--
+				-- 	return MiniStatusline.combine_groups({
+				-- 		{ hl = mode_hl, strings = { mode } },
+				-- 		{ hl = "MiniStatuslineDevinfo", strings = { git, diff, diagnostics, lsp } },
+				-- 		"%<", -- Mark general truncate point
+				-- 		{ hl = "MiniStatuslineFilename", strings = { filename } },
+				-- 		"%=", -- End left alignment
+				-- 		{ hl = "MiniStatuslineFileinfo", strings = { fileinfo } },
+				-- 		{ hl = mode_hl, strings = { search, location } },
+				-- 	})
+				-- end,
+			})
 
 			-- You can configure sections in the statusline by overriding their
 			-- default behavior. For example, here we set the section for
@@ -959,7 +1085,7 @@ require("lazy").setup({
 
 			---@diagnostic disable-next-line: missing-fields
 			require("nvim-treesitter.configs").setup({
-				ensure_installed = { "bash", "c", "html", "lua", "markdown", "vim", "vimdoc" },
+				ensure_installed = { "bash", "c", "html", "lua", "markdown", "vim", "vimdoc", "jsdoc" },
 				-- Autoinstall languages that are not installed
 				auto_install = true,
 				highlight = { enable = true },
@@ -995,6 +1121,36 @@ require("lazy").setup({
 		config = function()
 			require("nvim-surround").setup({
 				-- Configuration here, or leave empty to use defaults
+				surrounds = {
+					["j"] = {
+						add = function()
+							return { { "{/*" }, { "*/}" } }
+						end,
+
+						find = function()
+							local config = require("nvim-surround.config")
+							return config.get_selection({ motion = "aj" })
+						end,
+						-- delete = "^(.-%()().-(%))()$",
+						--
+						-- delete = "^(.-\\{\\/\\*()().-(\\*\\/\\}))()$",
+						delete = "^(.)().-(.)()$",
+					},
+					["J"] = {
+						add = function()
+							return { { "{/* " }, { " */}" } }
+						end,
+						find = function()
+							local config = require("nvim-surround.config")
+							return config.get_selection({ motion = "aJ" })
+						end,
+
+						-- delete = "^(.-%()().-(%))()$",
+						-- delete = "^(.-\{\/\*\s()().-(\s\*\/\}))()$",
+						delete = "^(. ?)().-( ?.)()$",
+					},
+				},
+				--
 			})
 		end,
 	},
@@ -1004,6 +1160,15 @@ require("lazy").setup({
 	--
 	--  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
 	--    For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
+	{
+		"stevearc/oil.nvim",
+		opts = {},
+		-- Optional dependencies
+		dependencies = { "nvim-tree/nvim-web-devicons" },
+		config = function()
+			require("oil").setup()
+		end,
+	},
 	{ import = "custom.plugins" },
 })
 
